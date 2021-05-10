@@ -16,7 +16,7 @@ k3 = deg_hif * hifss
 deg_lip = 0.005
 
 k4 = 44.
-k_r = 15
+k_r = 15.
 
 Kc, Kh, k2, k1, Ki = np.array([0.00209, 0.000237, 1.390, 0.000155, 0.00306])
 syn_hif = deg_hif * hifss
@@ -68,38 +68,3 @@ def run_model_sc(rosi, trials=300, over=None, kd=None, timing=0, time=None):
         d.append(y0)
     return np.dstack(d)
 
-
-def ppar_model2(ds, t, R, e0=1, over=None, kd=None, timing=0, kdc=1):
-
-    ov = 0
-    kkd = 1
-    x0, x1, x2, x3 = ds[0], ds[1], ds[2], ds[3]  # pparg, cebpa, lipids, hif
-    if kd is not None:
-        if t > timing:
-            kkd = kd
-    if over is not None:
-        if t > timing:
-            ov = over
-    K_H1 = 0
-    dx0 = e0 * syn_pparg * ((R) + k_r * kdc * x1**N/(((Kc * (1 + (x2 + ov)/Ki))**N+kdc * x1**N))) - deg_pparg * x0
-    dx1 = syn_cebp * x0 - deg_cebp * x1  # CEBPA
-    dx2 = kkd * syn_hif * x0/(K_P + x0) - deg_hif * x2  # hif
-    dx3 = syn_lip * (x2 + ov) * x0**NB/(K_P**NB + x0**NB) - deg_lip * x3
-
-    return [dx0, dx1, dx2, dx3]
-
-
-def run_model_detail2(rosi, trials=300, over=None, kd=None, timing=0, time=None, kdc=1):
-    yint = [0, 0, 0, 0]
-    if time is None:
-        time = np.linspace(0, 144, 50)
-    d = []
-    for _n in range(trials):
-        e0 = noise[_n]
-        y0 = odeint(ppar_model2, yint, time, args=(rosi, e0, over, kd, timing, kdc))
-        d.append(y0)
-    return np.dstack(d)
-
-
-if __name__ == "__main__":
-    print(run_model(0.1, timing=12, kd=0.5))
