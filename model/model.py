@@ -4,6 +4,7 @@ from scipy.integrate import odeint
 from scipy.stats import lognorm
 import multiprocessing as mp
 from numba import jit
+from typing import Union
 
 np.random.seed(1)
 noise = lognorm.rvs(0.3, size=100000)
@@ -25,8 +26,11 @@ syn_hif = deg_hif * hifss
 def ppar_model(ds, t, R, e0=1, over=None, kd=None, timing=0):
 
     x0, x1, x2, x3 = ds[0], ds[1], ds[2], ds[3]
-    Eov = over * hifss if t > timing and over else 0
-    Einh = 1 + kd if t > timing and kd else 1
+    # Eov = over * hifss if t > timing and over else 0
+    # Einh = 1 + kd if t > timing and kd else 1
+    
+    Eov = over * hifss if (over is not None and t > timing) else 0
+    Einh = 1 + kd if (kd is not None and t > timing) else 1
 
     # equation 5
     Kinh = Kc * (1 + (x2 + Eov)/Ki)
